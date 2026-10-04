@@ -1,23 +1,13 @@
 
-FROM php:8.4-apache
+FROM php:8.4-cli
 
-# Remove all enabled MPM modules, then enable only prefork
-RUN for f in /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf; do \
-    [ ! -e "$f" ] || rm -f "$f"; \
-    done && a2enmod mpm_prefork
-
-# Install PHP cURL extension
 RUN apt-get update \
     && apt-get install -y libcurl4-openssl-dev \
     && docker-php-ext-install curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure Apache to listen on port 8080
-RUN sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
-    && sed -i 's/<VirtualHost \*:80>/<VirtualHost *:8080>/' /etc/apache2/sites-available/000-default.conf
+WORKDIR /app
 
-COPY index.php /var/www/html/index.php
+COPY index.php /app/index.php
 
-EXPOSE 8080
-
-CMD ["apache2-foreground"]
+CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8080} -t /app"]
