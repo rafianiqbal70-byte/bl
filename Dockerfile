@@ -1,9 +1,13 @@
+```dockerfile
 FROM php:8.4-apache
 
 RUN apt-get update \
     && apt-get install -y libcurl4-openssl-dev \
     && docker-php-ext-install curl \
     && rm -rf /var/lib/apt/lists/*
+
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork
 
 ENV PORT=8080
 
@@ -16,3 +20,4 @@ COPY index.php /var/www/html/index.php
 EXPOSE 8080
 
 CMD ["apache2-foreground"]
+```
